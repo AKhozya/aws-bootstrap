@@ -1,7 +1,7 @@
-#!/bin/bash
+source aws_credentials.sh
 
-STACK_NAME=awsbootstrap 
-REGION=eu-west-2 
+STACK_NAME=awsbootstrap
+REGION=eu-west-2
 CLI_PROFILE=awsbootstrap
 
 EC2_INSTANCE_TYPE=t2.micro 
@@ -17,7 +17,7 @@ aws cloudformation deploy \
   --capabilities CAPABILITY_NAMED_IAM \
   --parameter-overrides EC2InstanceType=$EC2_INSTANCE_TYPE
 
-# If the deploy succeeded, show the DNS name of the created instance
+    # If the deploy succeeded, show the DNS name of the created instance
 if [ $? -eq 0 ]; then
   aws cloudformation list-exports \
     --profile awsbootstrap \
