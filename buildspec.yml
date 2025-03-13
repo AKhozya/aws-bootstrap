@@ -3,6 +3,8 @@ phases:
   install:
     runtime-versions:
       nodejs: 18
+    commands:
+    - n 18
   pre_build:
     commands:
       # run 'npm install' using versions in package-lock.json
