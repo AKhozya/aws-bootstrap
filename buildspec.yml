@@ -2,7 +2,7 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      nodejs: 18.14.0
+      nodejs: 16.20.2
   pre_build:
     commands:
       - npm ci
