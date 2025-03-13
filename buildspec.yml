@@ -5,7 +5,7 @@ phases:
       nodejs: 10
     commands:
       - npm install --force -g n 
-      - n 20
+      - n 18
   pre_build:
     commands:
       - npm ci
