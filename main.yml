@@ -231,7 +231,8 @@ Resources:
           cat > /tmp/install_script.sh << EOF 
             # START
             echo "Setting up NodeJS Environment"
-            curl https://github.com/nvm-sh/nvm/blob/master/install.sh | bash
+            # Install NVM properly using the official install script with version pinning
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
 
             # Dot source the files to ensure that variables are available within the current shell
             . /home/ec2-user/.nvm/nvm.sh
