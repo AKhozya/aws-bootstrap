@@ -1,7 +1,7 @@
 source aws_credentials.sh
 
 STACK_NAME=awsbootstrap
-REGION=eu-west-2
+REGION=us-east-1
 CLI_PROFILE=awsbootstrap
 
 EC2_INSTANCE_TYPE=t2.micro 
