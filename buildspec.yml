@@ -2,10 +2,7 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      nodejs: 10
-    commands:
-      - npm install --force -g n 
-      - n lts
+      nodejs: latest
   pre_build:
     commands:
       - npm ci
