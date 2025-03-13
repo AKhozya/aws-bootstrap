@@ -10,8 +10,7 @@ Resources:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-      BucketName: 
-        Fn::Sub: ${CodePipelineBucket}
+      BucketName: !Ref CodePipelineBucket
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
