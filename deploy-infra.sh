@@ -1,7 +1,7 @@
 source aws_credentials.sh
 
 STACK_NAME=awsbootstrap
-REGION=eu-west-2
+REGION=us-east-1
 CLI_PROFILE=awsbootstrap
 EC2_INSTANCE_TYPE=t2.micro 
 
@@ -43,9 +43,10 @@ aws cloudformation deploy \
     GitHubPersonalAccessToken=$GH_ACCESS_TOKEN \
     CodePipelineBucket=$CODEPIPELINE_BUCKET
 
-    # If the deploy succeeded, show the DNS name of the created instance
+# If the deploy succeeded, show the DNS name of the created instance
 if [ $? -eq 0 ]; then
   aws cloudformation list-exports \
     --profile awsbootstrap \
-    --query "Exports[?starts_with(Name,'InstanceEndpoint')].Value"
+    --query "Exports[?ends_with(Name,'LBEndpoint')].Value" 
 fi
+
