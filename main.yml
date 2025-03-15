@@ -22,20 +22,24 @@ Parameters:
   GitHubPersonalAccessToken:
     Type: String
     NoEcho: true
-    Description: 'A GitHub personal access token with "repo" and
-"admin:repo_hook" permissions.'
+    Description: 'A GitHub personal access token with "repo" and "admin:repo_hook" permissions.'
 
 
 Resources:
-
   SecurityGroup:
-    Type: "AWS::EC2::SecurityGroup"
+    Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: !Sub 'Internal Security group for ${AWS::StackName}'
+      VpcId: !Ref VPC 
+      GroupDescription:
+        !Sub 'Internal Security group for ${AWS::StackName}'
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 8080
           ToPort: 8080
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp 
+          FromPort: 80
+          ToPort: 80
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
           FromPort: 22
@@ -210,6 +214,7 @@ Resources:
         Timeout: PT5M
         Count: 1
     Properties:
+      SubnetId: !Ref SubnetAZ1 
       LaunchTemplate:
         LaunchTemplateId: !Ref InstanceLaunchTemplate
         Version: !GetAtt InstanceLaunchTemplate.LatestVersionNumber
@@ -224,6 +229,7 @@ Resources:
         Timeout: PT5M
         Count: 1
     Properties:
+      SubnetId: !Ref SubnetAZ2 
       LaunchTemplate:
         LaunchTemplateId: !Ref InstanceLaunchTemplate
         Version: !GetAtt InstanceLaunchTemplate.LatestVersionNumber
@@ -288,6 +294,24 @@ Resources:
 
               # Create log directory
               mkdir -p /home/ec2-user/app/logs
+              
+              # Create a simple test server to respond to health checks
+              cat > /home/ec2-user/app/server.js << 'INNEREOF'
+                const http = require('http');
+                const server = http.createServer((req, res) => {
+                  console.log(\`Received request: \${req.method} \${req.url}\`);
+                  res.statusCode = 200;
+                  res.setHeader('Content-Type', 'text/plain');
+                  res.end('Hello World\\n');
+                });
+                server.listen(8080, () => {
+                  console.log('Server running on port 8080');
+                });
+              INNEREOF
+              
+              # Start the server as a background process
+              cd /home/ec2-user/app
+              nohup node server.js > logs/server.log 2>&1 &
             EOF
 
             chown ec2-user:ec2-user /tmp/install_script.sh && chmod a+x /tmp/install_script.sh
@@ -305,15 +329,142 @@ Resources:
 
             # Signal to CloudFormation that the instance is ready
             /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --region ${AWS::Region} --resource ${!LOGICAL_ID}
+            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --region ${AWS::Region} --resource ${!LOGICAL_ID}
+
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+
+  SubnetAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]  
+      CidrBlock: 10.0.0.0/18
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+        - Key: AZ
+          Value: !Select [ 0, !GetAZs '' ]
+
+  SubnetAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 1, !GetAZs '' ] 
+      CidrBlock: 10.0.64.0/18
+      MapPublicIpOnLaunch: true 
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+        - Key: AZ
+          Value: !Select [ 1, !GetAZs '' ]
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  RouteTable1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref RouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  SubnetRouteTableAssociationAZ1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTable1
+      SubnetId: !Ref SubnetAZ1
+
+  SubnetRouteTableAssociationAZ2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTable1
+      SubnetId: !Ref SubnetAZ2
+  
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: application
+      Scheme: internet-facing
+  LoadBalancerTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      TargetType: instance
+      Port: 8080
+      Protocol: HTTP
+      VpcId: !Ref VPC
+      HealthCheckEnabled: true
+      HealthCheckProtocol: HTTP
+      HealthCheckPath: "/"
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+      Targets:
+        - Id: !Ref Instance
+        - Id: !Ref Instance2
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+      Port: 80
+      Protocol: HTTP
+
+  LoadBalancerTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      TargetType: instance
+      Port: 8080
+      Protocol: HTTP
+      VpcId: !Ref VPC
+      HealthCheckEnabled: true
+      HealthCheckProtocol: HTTP
+      Targets:
+        - Id: !Ref Instance
+        - Id: !Ref Instance2
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
 
 Outputs:
- InstanceEndpoint1:
+  InstanceEndpoint1:
    Description: The DNS name for the created instance
    Value: !Sub "http://${Instance.PublicDnsName}:8080" 
    Export:
      Name: InstanceEndpoint1
- InstanceEndpoint2:
+  InstanceEndpoint2:
    Description: The DNS name for the created instance
    Value: !Sub "http://${Instance2.PublicDnsName}:8080" 
    Export:
      Name: InstanceEndpoint2
+  LBEndpoint:
+    Description: The DNS name for the LB
+    Value: !Sub "http://${LoadBalancer.DNSName}:80"
+    Export:
+      Name: LBEndpoint
