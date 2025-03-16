@@ -5,6 +5,7 @@ REGION=eu-west-2
 CLI_PROFILE=awsbootstrap
 EC2_INSTANCE_TYPE=t2.micro 
 DOMAIN=lol-kek-cheburek1111.com
+SUB_DOMAIN=www
 
 GH_ACCESS_TOKEN=$(cat ~/.github/aws-bootstrap-access-token)
 GH_OWNER=$(cat ~/.github/aws-bootstrap-owner)
@@ -73,6 +74,7 @@ aws cloudformation deploy \
   --parameter-overrides \
     EC2InstanceType=$EC2_INSTANCE_TYPE \
     Domain=$DOMAIN \
+    SubDomain=$SUB_DOMAIN \
     GitHubOwner=$GH_OWNER \
     GitHubRepo=$GH_REPO \
     GitHubBranch=$GH_BRANCH \
