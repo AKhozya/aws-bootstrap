@@ -14,8 +14,10 @@ Resources:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-     BucketName: 
-       Ref: CodePipelineBucket
+     BucketName: !Join 
+       - '-'
+       - - !Ref CodePipelineBucket
+         - !Ref AWS::AccountId
      PublicAccessBlockConfiguration:
        BlockPublicAcls: true
        BlockPublicPolicy: true
@@ -24,14 +26,14 @@ Resources:
      BucketEncryption:
        ServerSideEncryptionConfiguration:
          - ServerSideEncryptionByDefault:
-             SSEAlgorithm: AES256
-
   CloudFormationS3Bucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-      BucketName: 
-        Ref: CloudFormationBucket
+      BucketName: !Join
+        - '-'
+        - - !Ref CloudFormationBucket
+          - !Ref AWS::AccountId
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
