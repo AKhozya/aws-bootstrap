@@ -12,6 +12,7 @@ Parameters:
 Resources:
   CodePipelineS3Bucket:
     Type: AWS::S3::Bucket
+    Condition: CreateCodePipelineBucket
     DeletionPolicy: Retain
     Properties:
       BucketName: !Ref CodePipelineBucket
@@ -27,6 +28,7 @@ Resources:
 
   CloudFormationS3Bucket:
     Type: AWS::S3::Bucket
+    Condition: CreateCloudFormationBucket
     DeletionPolicy: Retain
     Properties:
       BucketName: !Ref CloudFormationBucket
@@ -39,3 +41,7 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
+
+Conditions:
+  CreateCodePipelineBucket: !Equals [ !Ref CodePipelineBucket, "" ]
+  CreateCloudFormationBucket: !Equals [ !Ref CloudFormationBucket, "" ]

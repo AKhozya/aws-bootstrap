@@ -4,6 +4,7 @@ STACK_NAME=awsbootstrap
 REGION=eu-west-2
 CLI_PROFILE=awsbootstrap
 EC2_INSTANCE_TYPE=t2.micro 
+DOMAIN=lol-kek-cheburek1111.com
 
 GH_ACCESS_TOKEN=$(cat ~/.github/aws-bootstrap-access-token)
 GH_OWNER=$(cat ~/.github/aws-bootstrap-owner)
@@ -11,30 +12,24 @@ GH_REPO=$(cat ~/.github/aws-bootstrap-repo)
 GH_BRANCH=master
 
 AWS_ACCOUNT_ID=`aws sts get-caller-identity --profile awsbootstrap --query "Account" --output text`
-CODEPIPELINE_BUCKET="$STACK_NAME-$REGION-codepipeline-$AWS_ACCOUNT_ID-$(date +%s)" 
+CODEPIPELINE_BUCKET="$STACK_NAME-$REGION-codepipeline-$AWS_ACCOUNT_ID"
 echo $CODEPIPELINE_BUCKET
 
-CFN_BUCKET="$STACK_NAME-cfn-$AWS_ACCOUNT_ID-$(date +%s)"
+CFN_BUCKET="$STACK_NAME-cfn-$AWS_ACCOUNT_ID"
 echo $CFN_BUCKET
 
-# Function to empty and delete an S3 bucket
-empty_and_delete_bucket() {
+# Function to create an S3 bucket if it does not exist
+create_bucket_if_not_exists() {
   BUCKET_NAME=$1
-  echo "\n\n=========== Emptying S3 bucket: $BUCKET_NAME ==========="
-  aws s3 rm s3://$BUCKET_NAME --recursive --profile $CLI_PROFILE
-
-  echo "\n\n=========== Deleting S3 bucket: $BUCKET_NAME ==========="
-  aws s3api delete-bucket --bucket $BUCKET_NAME --region $REGION --profile $CLI_PROFILE
+  if ! aws s3api head-bucket --bucket $BUCKET_NAME --region $REGION --profile $CLI_PROFILE 2>/dev/null; then
+    echo "\n\n=========== Creating S3 bucket: $BUCKET_NAME ==========="
+    aws s3 mb s3://$BUCKET_NAME --region $REGION --profile $CLI_PROFILE
+  fi
 }
 
-# Empty and delete the S3 buckets if they exist
-if aws s3api head-bucket --bucket $CODEPIPELINE_BUCKET --region $REGION --profile $CLI_PROFILE 2>/dev/null; then
-  empty_and_delete_bucket $CODEPIPELINE_BUCKET
-fi
-
-if aws s3api head-bucket --bucket $CFN_BUCKET --region $REGION --profile $CLI_PROFILE 2>/dev/null; then
-  empty_and_delete_bucket $CFN_BUCKET
-fi
+# Create the S3 buckets if they do not exist
+create_bucket_if_not_exists $CODEPIPELINE_BUCKET
+create_bucket_if_not_exists $CFN_BUCKET
 
 # Deploys static resources
 echo "\n\n=========== Deploying setup.yml ==========="
@@ -77,6 +72,7 @@ aws cloudformation deploy \
   --capabilities CAPABILITY_NAMED_IAM \
   --parameter-overrides \
     EC2InstanceType=$EC2_INSTANCE_TYPE \
+    Domain=$DOMAIN \
     GitHubOwner=$GH_OWNER \
     GitHubRepo=$GH_REPO \
     GitHubBranch=$GH_BRANCH \
