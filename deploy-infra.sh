@@ -1,4 +1,4 @@
-tsource aws_credentials.sh
+source aws_credentials.sh
 
 STACK_NAME=awsbootstrap
 REGION=eu-west-2
