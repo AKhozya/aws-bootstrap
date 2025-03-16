@@ -14,11 +14,7 @@ Resources:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-     BucketName: 
-       Fn::Join: 
-       - '-'
-       - - Ref: CodePipelineBucket
-         - Ref: AWS::AccountId
+     BucketName: !Ref CodePipelineBucket
      PublicAccessBlockConfiguration:
        BlockPublicAcls: true
        BlockPublicPolicy: true
@@ -28,16 +24,12 @@ Resources:
        ServerSideEncryptionConfiguration:
          - ServerSideEncryptionByDefault:
              SSEAlgorithm: AES256
- 
+
   CloudFormationS3Bucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-      BucketName: 
-        Fn::Join:
-        - '-'
-        - - Ref: CloudFormationBucket
-          - Ref: AWS::AccountId
+      BucketName: !Ref CloudFormationBucket
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -47,15 +39,3 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault: 
               SSEAlgorithm: AES256
-Outputs:
-  CodePipelineBucketOutput:
-    Value: 
-      Ref: CodePipelineS3Bucket
-    Export:
-      Name: CodePipelineBucketName
-
-  CloudFormationBucketOutput:
-    Value: 
-      Ref: CloudFormationS3Bucket
-    Export:
-      Name: CloudFormationBucketName
