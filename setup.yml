@@ -26,22 +26,22 @@ Resources:
          - ServerSideEncryptionByDefault:
              SSEAlgorithm: AES256
 
-  CloudFormationS3Bucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    Properties:
-      BucketName: 
-        Ref: CloudFormationBucket
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault: 
-              SSEAlgorithm: AES256
-      
+    CloudFormationS3Bucket:
+      Type: AWS::S3::Bucket
+      DeletionPolicy: Retain
+      Properties:
+        BucketName: 
+          Ref: CloudFormationBucket
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+        BucketEncryption:
+          ServerSideEncryptionConfiguration:
+            - ServerSideEncryptionByDefault: 
+                SSEAlgorithm: AES256
+  
   Outputs:
     CodePipelineBucketName:
       Description: "Name of the S3 bucket used to store CodePipeline artifacts"
@@ -49,7 +49,7 @@ Resources:
         Ref: CodePipelineS3Bucket
       Export:
         Name: CodePipelineBucketName
-
+  
     CloudFormationBucketName:
       Description: "Name of the S3 bucket used to store CloudFormation templates"
       Value: 
