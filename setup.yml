@@ -14,10 +14,11 @@ Resources:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-     BucketName: !Join 
+     BucketName: 
+       Fn::Join: 
        - '-'
-       - - !Ref CodePipelineBucket
-         - !Ref AWS::AccountId
+       - - Fn::Ref: CodePipelineBucket
+         - Fn::Ref: AWS::AccountId
      PublicAccessBlockConfiguration:
        BlockPublicAcls: true
        BlockPublicPolicy: true
@@ -32,10 +33,11 @@ Resources:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-      BucketName: !Join
+      BucketName: 
+        Fn::Join:
         - '-'
-        - - !Ref CloudFormationBucket
-          - !Ref AWS::AccountId
+        - - Fn::Ref: CloudFormationBucket
+          - Fn::Ref: AWS::AccountId
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -45,43 +47,15 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault: 
               SSEAlgorithm: AES256
-  
-  AwsBootstrapCfnBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    Properties:
-      BucketName: !Join
-        - '-'
-        - - 'bootstrap'
-          - !Ref AWS::AccountId
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-  
 Outputs:
-  CodePipelineBucketName:
-    Description: "Name of the S3 bucket used to store CodePipeline artifacts"
+  CodePipelineBucketOutput:
     Value: 
-      Ref: CodePipelineS3Bucket
+      Fn::Ref: CodePipelineS3Bucket
     Export:
       Name: CodePipelineBucketName
 
-  CloudFormationBucketName:
-    Description: "Name of the S3 bucket used to store CloudFormation templates"
+  CloudFormationBucketOutput:
     Value: 
-      Ref: CloudFormationS3Bucket
+      Fn::Ref: CloudFormationS3Bucket
     Export:
       Name: CloudFormationBucketName
-
-  AwsBootstrapCfnBucketName:
-    Description: "Name of the S3 bucket used for awsbootstrap-cfn artifacts"
-    Value:
-      Ref: AwsBootstrapCfnBucket
-    Export:
-      Name: AwsBootstrapCfnBucketName
