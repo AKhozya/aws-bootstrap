@@ -14,16 +14,16 @@ Resources:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-     BucketName: !Ref CodePipelineBucket
-     PublicAccessBlockConfiguration:
-       BlockPublicAcls: true
-       BlockPublicPolicy: true
-       IgnorePublicAcls: true
-       RestrictPublicBuckets: true
-     BucketEncryption:
-       ServerSideEncryptionConfiguration:
-         - ServerSideEncryptionByDefault:
-             SSEAlgorithm: AES256
+      BucketName: !Ref CodePipelineBucket
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
 
   CloudFormationS3Bucket:
     Type: AWS::S3::Bucket
@@ -37,5 +37,5 @@ Resources:
         RestrictPublicBuckets: true
       BucketEncryption:
         ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault: 
+          - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256

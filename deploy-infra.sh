@@ -17,9 +17,24 @@ echo $CODEPIPELINE_BUCKET
 CFN_BUCKET="$STACK_NAME-cfn-$AWS_ACCOUNT_ID-$(date +%s)"
 echo $CFN_BUCKET
 
-# Empty the S3 bucket before deleting it
-echo "\n\n=========== Emptying S3 bucket ==========="
-aws s3 rm s3://$CODEPIPELINE_BUCKET --recursive --profile $CLI_PROFILE
+# Function to empty and delete an S3 bucket
+empty_and_delete_bucket() {
+  BUCKET_NAME=$1
+  echo "\n\n=========== Emptying S3 bucket: $BUCKET_NAME ==========="
+  aws s3 rm s3://$BUCKET_NAME --recursive --profile $CLI_PROFILE
+
+  echo "\n\n=========== Deleting S3 bucket: $BUCKET_NAME ==========="
+  aws s3api delete-bucket --bucket $BUCKET_NAME --region $REGION --profile $CLI_PROFILE
+}
+
+# Empty and delete the S3 buckets if they exist
+if aws s3api head-bucket --bucket $CODEPIPELINE_BUCKET --region $REGION --profile $CLI_PROFILE 2>/dev/null; then
+  empty_and_delete_bucket $CODEPIPELINE_BUCKET
+fi
+
+if aws s3api head-bucket --bucket $CFN_BUCKET --region $REGION --profile $CLI_PROFILE 2>/dev/null; then
+  empty_and_delete_bucket $CFN_BUCKET
+fi
 
 # Deploys static resources
 echo "\n\n=========== Deploying setup.yml ==========="
@@ -51,7 +66,6 @@ if ! [[ $PACKAGE_ERR =~ "Successfully packaged artifacts" ]]; then
   exit 1
 fi
 
-
 # Deploy the CloudFormation template
 echo "\n\n=========== Deploying main.yml ===========" 
 aws cloudformation deploy \
@@ -70,8 +84,8 @@ aws cloudformation deploy \
     CodePipelineBucket=$CODEPIPELINE_BUCKET
 
 # If the deploy succeeded, show the DNS name of the endpoints
-  if [ $? -eq 0 ]; then
-    aws cloudformation list-exports \
-      --profile awsbootstrap \
-      --query "Exports[?ends_with(Name,'LBEndpoint')].Value"
+if [ $? -eq 0 ]; then
+  aws cloudformation list-exports \
+    --profile awsbootstrap \
+    --query "Exports[?ends_with(Name,'LBEndpoint')].Value"
 fi
