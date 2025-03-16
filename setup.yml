@@ -26,6 +26,8 @@ Resources:
      BucketEncryption:
        ServerSideEncryptionConfiguration:
          - ServerSideEncryptionByDefault:
+             SSEAlgorithm: AES256
+ 
   CloudFormationS3Bucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
