@@ -46,6 +46,24 @@ Resources:
           - ServerSideEncryptionByDefault: 
               SSEAlgorithm: AES256
   
+  AwsBootstrapCfnBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Join
+        - '-'
+        - - 'bootstrap'
+          - !Ref AWS::AccountId
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+  
 Outputs:
   CodePipelineBucketName:
     Description: "Name of the S3 bucket used to store CodePipeline artifacts"
@@ -60,3 +78,10 @@ Outputs:
       Ref: CloudFormationS3Bucket
     Export:
       Name: CloudFormationBucketName
+
+  AwsBootstrapCfnBucketName:
+    Description: "Name of the S3 bucket used for awsbootstrap-cfn artifacts"
+    Value:
+      Ref: AwsBootstrapCfnBucket
+    Export:
+      Name: AwsBootstrapCfnBucketName
