@@ -1,4 +1,4 @@
-source aws_credentials.sh
+#source aws_credentials.sh
 
 STACK_NAME=awsbootstrap
 REGION=eu-west-2
@@ -11,12 +11,15 @@ GH_REPO=$(cat ~/.github/aws-bootstrap-repo)
 GH_BRANCH=master
 
 AWS_ACCOUNT_ID=`aws sts get-caller-identity --profile awsbootstrap --query "Account" --output text`
-CODEPIPELINE_BUCKET="$STACK_NAME-$REGION-codepipeline-$AWS_ACCOUNT_ID" 
+CODEPIPELINE_BUCKET="$STACK_NAME-$REGION-codepipeline-$AWS_ACCOUNT_ID-$(date +%s)" 
 echo $CODEPIPELINE_BUCKET
 
-CFN_BUCKET="$STACK_NAME-cfn-$AWS_ACCOUNT_ID"
+CFN_BUCKET="$STACK_NAME-cfn-$AWS_ACCOUNT_ID-$(date +%s)"
 echo $CFN_BUCKET
 
+# Empty the S3 bucket before deleting it
+echo "\n\n=========== Emptying S3 bucket ==========="
+aws s3 rm s3://$CODEPIPELINE_BUCKET --recursive --profile $CLI_PROFILE
 
 # Deploys static resources
 echo "\n\n=========== Deploying setup.yml ==========="
