@@ -17,8 +17,8 @@ Resources:
      BucketName: 
        Fn::Join: 
        - '-'
-       - - Fn::Ref: CodePipelineBucket
-         - Fn::Ref: AWS::AccountId
+       - - Ref: CodePipelineBucket
+         - Ref: AWS::AccountId
      PublicAccessBlockConfiguration:
        BlockPublicAcls: true
        BlockPublicPolicy: true
@@ -36,8 +36,8 @@ Resources:
       BucketName: 
         Fn::Join:
         - '-'
-        - - Fn::Ref: CloudFormationBucket
-          - Fn::Ref: AWS::AccountId
+        - - Ref: CloudFormationBucket
+          - Ref: AWS::AccountId
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -50,12 +50,12 @@ Resources:
 Outputs:
   CodePipelineBucketOutput:
     Value: 
-      Fn::Ref: CodePipelineS3Bucket
+      Ref: CodePipelineS3Bucket
     Export:
       Name: CodePipelineBucketName
 
   CloudFormationBucketOutput:
     Value: 
-      Fn::Ref: CloudFormationS3Bucket
+      Ref: CloudFormationS3Bucket
     Export:
       Name: CloudFormationBucketName
