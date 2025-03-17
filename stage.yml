@@ -197,7 +197,7 @@ Resources:
       VpcId: !Ref VPC
       HealthCheckEnabled: true
       HealthCheckProtocol: HTTP
-            Tags:
+      Tags:
         - Key: Name
           Value: !Ref AWS::StackName
 
@@ -330,7 +330,7 @@ Resources:
               # Create a self-signed TLS certificate to communicate with the load balancer
               mkdir -p /home/ec2-user/app/keys
               cd /home/ec2-user/app/keys
-              openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 \
+              openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 \ 
                           -subj "/C=/ST=/L=/O=/CN=localhost" -keyout key.pem -out cert.pem
             EOF
 
