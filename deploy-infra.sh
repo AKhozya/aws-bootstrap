@@ -5,9 +5,10 @@ REGION=eu-west-2
 CLI_PROFILE=awsbootstrap
 EC2_INSTANCE_TYPE=t2.micro 
 DOMAIN=akhozya.net
-SUB_DOMAIN=
 CERT=`aws acm list-certificates --region $REGION --profile awsbootstrap --output text \
         --query "CertificateSummaryList[?DomainName=='$DOMAIN'].CertificateArn | [0]"` 
+SUB_DOMAIN=
+
 
 GH_ACCESS_TOKEN=$(cat ~/.github/aws-bootstrap-access-token)
 GH_OWNER=$(cat ~/.github/aws-bootstrap-owner)
@@ -16,10 +17,10 @@ GH_BRANCH=master
 
 AWS_ACCOUNT_ID=`aws sts get-caller-identity --profile awsbootstrap --query "Account" --output text`
 TIMESTAMP=$(date +%s)
-CODEPIPELINE_BUCKET="$STACK_NAME-$REGION-codepipeline-$AWS_ACCOUNT_ID-$TIMESTAMP"
+CODEPIPELINE_BUCKET="$STACK_NAME-$REGION-codepipeline-$AWS_ACCOUNT_ID"
 echo $CODEPIPELINE_BUCKET
 
-CFN_BUCKET="$STACK_NAME-cfn-$AWS_ACCOUNT_ID-$TIMESTAMP"
+CFN_BUCKET="$STACK_NAME-cfn-$AWS_ACCOUNT_ID"
 echo $CFN_BUCKET
 
 # Function to create an S3 bucket with retry logic

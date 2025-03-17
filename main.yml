@@ -186,7 +186,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: stage.yml
-      TimeoutInMinutes: 15
+      TimeoutInMinutes: 30
       Parameters:
         EC2InstanceType: !Ref EC2InstanceType
         EC2AMI: !Ref EC2AMI
@@ -198,7 +198,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: stage.yml
-      TimeoutInMinutes: 15
+      TimeoutInMinutes: 30
       Parameters:
         EC2InstanceType: !Ref EC2InstanceType
         EC2AMI: !Ref EC2AMI
