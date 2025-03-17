@@ -4,7 +4,6 @@ Parameters:
   CodePipelineBucket:
     Type: String
     Description: 'The S3 bucket for CodePipeline artifacts.'
-
   CloudFormationBucket:
     Type: String
     Description: 'The S3 bucket for CloudFormation templates.'

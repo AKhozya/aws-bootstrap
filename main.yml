@@ -29,6 +29,9 @@ Parameters:
   SubDomain:
     Type: String
     Description: 'The subdomain name for the application.'
+  Certificate:
+    Type: String
+    Description: 'An existing ACM certificate ARN for your domain'
 
 Resources:
 
@@ -183,34 +186,44 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: stage.yml
-      TimeoutInMinutes: 30
+      TimeoutInMinutes: 15
       Parameters:
         EC2InstanceType: !Ref EC2InstanceType
         EC2AMI: !Ref EC2AMI
         Domain: !Ref Domain
         SubDomain: staging
+        Certificate: !Ref Certificate 
 
   Prod:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: stage.yml
-      TimeoutInMinutes: 30
+      TimeoutInMinutes: 15
       Parameters:
         EC2InstanceType: !Ref EC2InstanceType
         EC2AMI: !Ref EC2AMI
         Domain: !Ref Domain
         SubDomain: prod
+        Certificate: !Ref Certificate 
 
 Outputs:
-
   StagingLBEndpoint:
     Description: The DNS name for the staging LB
     Value: !GetAtt Staging.Outputs.LBEndpoint
     Export:
       Name: StagingLBEndpoint
-
+  StagingHTTPSLBEndpoint:
+    Description: The DNS name for the staging HTTPS LB
+    Value: !GetAtt Staging.Outputs.HTTPSEndpoint
+    Export:
+      Name: StagingHTTPSLBEndpoint
   ProdLBEndpoint:
     Description: The DNS name for the prod LB
     Value: !GetAtt Prod.Outputs.LBEndpoint
     Export:
       Name: ProdLBEndpoint
+  ProdHTTPSLBEndpoint: 
+    Description: The DNS name for the prod HTTPS LB
+    Value: !GetAtt Prod.Outputs.HTTPSEndpoint
+    Export:
+      Name: ProdHTTPSLBEndpoint

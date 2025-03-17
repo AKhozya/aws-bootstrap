@@ -6,6 +6,8 @@ CLI_PROFILE=awsbootstrap
 EC2_INSTANCE_TYPE=t2.micro 
 DOMAIN=akhozya.net
 SUB_DOMAIN=
+CERT=`aws acm list-certificates --region $REGION --profile awsbootstrap --output text \
+        --query "CertificateSummaryList[?DomainName=='$DOMAIN'].CertificateArn | [0]"` 
 
 GH_ACCESS_TOKEN=$(cat ~/.github/aws-bootstrap-access-token)
 GH_OWNER=$(cat ~/.github/aws-bootstrap-owner)
@@ -13,19 +15,42 @@ GH_REPO=$(cat ~/.github/aws-bootstrap-repo)
 GH_BRANCH=master
 
 AWS_ACCOUNT_ID=`aws sts get-caller-identity --profile awsbootstrap --query "Account" --output text`
-CODEPIPELINE_BUCKET="$STACK_NAME-$REGION-codepipeline-$AWS_ACCOUNT_ID"
+TIMESTAMP=$(date +%s)
+CODEPIPELINE_BUCKET="$STACK_NAME-$REGION-codepipeline-$AWS_ACCOUNT_ID-$TIMESTAMP"
 echo $CODEPIPELINE_BUCKET
 
-CFN_BUCKET="$STACK_NAME-cfn-$AWS_ACCOUNT_ID"
+CFN_BUCKET="$STACK_NAME-cfn-$AWS_ACCOUNT_ID-$TIMESTAMP"
 echo $CFN_BUCKET
 
-# Function to create an S3 bucket if it does not exist
+# Function to create an S3 bucket with retry logic
 create_bucket_if_not_exists() {
   BUCKET_NAME=$1
-  if ! aws s3api head-bucket --bucket $BUCKET_NAME --region $REGION --profile $CLI_PROFILE 2>/dev/null; then
-    echo "\n\n=========== Creating S3 bucket: $BUCKET_NAME ==========="
-    aws s3 mb s3://$BUCKET_NAME --region $REGION --profile $CLI_PROFILE
-  fi
+  MAX_RETRIES=5
+  RETRY_COUNTER=0
+  
+  while [ $RETRY_COUNTER -lt $MAX_RETRIES ]; do
+    if ! aws s3api head-bucket --bucket $BUCKET_NAME --region $REGION --profile $CLI_PROFILE 2>/dev/null; then
+      echo "\n\n=========== Creating S3 bucket: $BUCKET_NAME (Attempt $(($RETRY_COUNTER + 1))/$MAX_RETRIES) ==========="
+      CREATE_RESULT=$(aws s3 mb s3://$BUCKET_NAME --region $REGION --profile $CLI_PROFILE 2>&1)
+      
+      if [[ $CREATE_RESULT == *"make_bucket"* && $CREATE_RESULT != *"error"* ]]; then
+        echo "Bucket created successfully"
+        return 0
+      else
+        echo "Bucket creation failed: $CREATE_RESULT"
+        echo "Waiting 10 seconds before retrying..."
+        sleep 10
+      fi
+    else
+      echo "\n\n=========== Bucket already exists: $BUCKET_NAME ==========="
+      return 0
+    fi
+    
+    RETRY_COUNTER=$(($RETRY_COUNTER + 1))
+  done
+  
+  echo "\n\n=========== Failed to create bucket after $MAX_RETRIES attempts ==========="
+  return 1
 }
 
 # Create the S3 buckets if they do not exist
@@ -62,8 +87,10 @@ if ! [[ $PACKAGE_ERR =~ "Successfully packaged artifacts" ]]; then
   exit 1
 fi
 
+echo "Certificate ARN: $CERT"
+
 # Deploy the CloudFormation template
-echo "\n\n=========== Deploying main.yml ===========" 
+echo "\n\n=========== Deploying main.yml ==========="
 aws cloudformation deploy \
   --region $REGION \
   --profile $CLI_PROFILE \
@@ -75,6 +102,7 @@ aws cloudformation deploy \
     EC2InstanceType=$EC2_INSTANCE_TYPE \
     Domain=$DOMAIN \
     SubDomain=$SUB_DOMAIN \
+    Certificate=$CERT \
     GitHubOwner=$GH_OWNER \
     GitHubRepo=$GH_REPO \
     GitHubBranch=$GH_BRANCH \
