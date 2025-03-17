@@ -4,8 +4,8 @@ STACK_NAME=awsbootstrap
 REGION=eu-west-2
 CLI_PROFILE=awsbootstrap
 EC2_INSTANCE_TYPE=t2.micro 
-DOMAIN=lol-kek-cheburek1111.com
-SUB_DOMAIN=www
+DOMAIN=akhozya.net
+SUB_DOMAIN=
 
 GH_ACCESS_TOKEN=$(cat ~/.github/aws-bootstrap-access-token)
 GH_OWNER=$(cat ~/.github/aws-bootstrap-owner)
