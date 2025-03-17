@@ -1,20 +1,14 @@
-#!/bin/bash -xe
+#!/bin/bash
 source /home/ec2-user/.bash_profile
 cd /home/ec2-user/app/release
 
-# Query the EC2 metadata service for this instance's region
+# Create logs directory if needed
+mkdir -p /home/ec2-user/logs
 
-#REGION=`curl -s http://169.254.169.254/latest/dynamic/instanceidentity/document | jq .region -r`
+# Use correct metadata URL
+REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/[a-z]$//')
+export INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+export STACK_NAME=$(aws --region $REGION ec2 describe-tags --filters "Name=resource-id,Values=${INSTANCE_ID}" "Name=key,Values=aws:cloudformation:stack-name" | grep -oP '(?<="Value": ")[^"]*')
 
-REGION="`wget -qO- http://instance-data/latest/meta-data/placement/availability-zone | sed -e 's:\([0-9][0-9]*\)[a-z]*\$:\\1:'`"
-
-# Query the EC2 metadata service for this instance's instance-id
-
-#export INSTANCE_ID=`curl -s http://169.254.169.254/latest/meta-data/instanceid`
-export INSTANCE_ID="`wget -q -O - http://169.254.169.254/latest/meta-data/instance-id`"
-
-# Query EC2 describeTags method and pull out the CFN Logical ID for this instance
-
-export STACK_NAME=`aws --region $REGION ec2 describe-tags --filters "Name=resource-id,Values=${INSTANCE_ID}" "Name=key,Values=aws:cloudformation:stack-name" | jq -r ".Tags[0].Value"`
-
-npm run start 
+echo "Running npm start with STACK_NAME=$STACK_NAME"
+npm run start
