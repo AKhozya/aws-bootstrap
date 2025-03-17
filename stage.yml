@@ -222,7 +222,7 @@ Resources:
         - !Select [ 1, !GetAZs '' ]
       MinSize: 2
       MaxSize: 6
-      HealthCheckGracePeriod: 300
+      HealthCheckGracePeriod: 0
       HealthCheckType: ELB
       LaunchTemplate:
         LaunchTemplateId: !Ref InstanceLaunchTemplate
