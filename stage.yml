@@ -330,8 +330,7 @@ Resources:
               # Create a self-signed TLS certificate to communicate with the load balancer
               mkdir -p /home/ec2-user/app/keys
               cd /home/ec2-user/app/keys
-              openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 \ 
-                          -subj "/C=/ST=/L=/O=/CN=localhost" -keyout key.pem -out cert.pem
+              openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=/ST=/L=/O=/CN=localhost" -keyout key.pem -out cert.pem
             EOF
 
             chown ec2-user:ec2-user /tmp/install_script.sh && chmod a+x /tmp/install_script.sh
