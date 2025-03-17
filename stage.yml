@@ -197,6 +197,8 @@ Resources:
       VpcId: !Ref VPC
       HealthCheckEnabled: true
       HealthCheckProtocol: HTTP
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 10
       Tags:
         - Key: Name
           Value: !Ref AWS::StackName
@@ -222,7 +224,7 @@ Resources:
         - !Select [ 1, !GetAZs '' ]
       MinSize: 2
       MaxSize: 6
-      HealthCheckGracePeriod: 0
+      HealthCheckGracePeriod: 300
       HealthCheckType: ELB
       LaunchTemplate:
         LaunchTemplateId: !Ref InstanceLaunchTemplate
